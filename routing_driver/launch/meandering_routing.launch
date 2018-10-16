@@ -1,0 +1,14 @@
+<launch>
+
+    <arg name="filename" default="flatroom"/>
+    <arg name="map_file" default="$(find routing_driver)/map/$(arg filename).yaml"/>
+    <arg name="waypoint_file" default="$(find routing_driver)/waypoints/$(arg filename).yaml"/>
+
+    <node name="meandering_routing" pkg="routing_driver" type="meandering_routing" output="screen">
+        <param name="read_filename" value="$(arg waypoint_file)"/>
+        <param name="save_filename" value="$(find routing_driver)/waypoints/$(arg filename)_meandering.yaml"/>
+    </node>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+</launch>

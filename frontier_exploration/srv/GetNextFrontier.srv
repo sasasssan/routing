@@ -1,0 +1,5 @@
+#request
+geometry_msgs/PoseStamped start_pose
+---
+#response
+geometry_msgs/PoseStamped next_frontier

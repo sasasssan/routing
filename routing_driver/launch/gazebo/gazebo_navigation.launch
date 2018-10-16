@@ -1,0 +1,50 @@
+<!-- gazebo_navigation -->
+
+<launch>
+  <arg name="filename" default="gazebo_navigation"/>
+  <arg name="map_file" default="$(find routing_driver)/navigation/$(arg filename)_map.yaml"/>
+  <arg name="waypoint_file" default="$(find routing_driver)/navigation/$(arg filename)_waypoint.yaml"/>
+
+  <!-- AMCL -->
+  <include file="$(find routing_driver)/launch/gazebo/amcl.launch.xml"/>
+
+  <!-- Map server -->
+   <node name="multi_map_server" pkg="multi_map_server" type="multi_map_server_node">
+     <param name="package" value="$(find routing_driver)"/>
+     <param name="filename" value="$(arg map_file)" />
+   </node>
+
+  <!-- publish_waypoints -->
+   <node name="waitpoints_publish" pkg="waypoints_publish" type="waypoints_publish" output="screen">
+     <param name="package" value="$(find routing_driver)"/>
+     <param name="filename" value="$(arg waypoint_file)" />
+   </node>
+
+  <node name="movebase_core" pkg="movebase_core" type="movebase_core" output="screen">
+  </node>
+
+  <!-- move_base -->  
+  <arg name="cmd_vel_topic" default="cmd_vel" />
+  <arg name="odom_topic" default="odom" />
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <param name="recovery_behavior_enabled" value="true"/>
+    <param name="clearing_rotation_allowed" value="false"/>
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/dwa_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find dulcinea_driver)/param/gazebo/move_base_params.yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+  </node>
+
+  <node name="check_mapgrid_info" pkg="routing_driver" type="check_mapgrid_info" output="screen"/>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find dulcinea_driver)/rviz/dulcinea_navigation.rviz"/>
+
+</launch>
+

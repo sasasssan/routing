@@ -1,0 +1,98 @@
+<launch>
+    <master auto="start"/>
+    <param name="/use_sim_time" value="true"/>
+    <arg name="filename" default="gazebo_navigation"/>
+    
+    <arg name="show_rviz" default="true"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(find routing_driver)/worlds/Building.world"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <param name="robot_description" command="$(find xacro)/xacro.py '$(find dulcinea_driver)/urdf/dulcinea.urdf.xacro'" />
+
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x -6.0 -y -6.0 -z 0 -R 0 -P 0 -Y 0 -model dulcinea" />
+
+    <group if="$(arg show_rviz)">
+        <!-- load joint controller configurations from YAML file to parameter server -->
+        <rosparam file="$(find dulcinea_driver)/config/joint_position_control.yaml" command="load" />
+        <!-- load the controllers -->
+        <node name="dulcinea_controller" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller" />
+    
+        <!-- publish all the frames to TF -->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+        <param name="publish_frequency" value="20"/> <!-- Hz -->
+        </node>
+    </group> 
+
+    <node pkg="gmapping" type="slam_gmapping" name="dulcinea_slam_gmapping" output="screen">
+  	    <remap from="/scan" to="/laser_scan"/>
+        <param name="inverted_laser" value="false" />
+		<param name="throttle_scans" value="1" />
+		<param name="base_frame" value="base_footprint"/>
+		<param name="odom_frame" value="odom"/>
+		<param name="map_frame" value="map"/>
+		<param name="map_update_interval" value="5.0"/>
+		<param name="maxUrange" value="30.0"/>
+		<param name="sigma" value="0.05"/>
+		<param name="kernelSize" value="1"/>
+		<param name="lstep" value="0.01"/>
+		<param name="astep" value="0.001"/>
+		<param name="iterations" value="3"/>
+		<param name="lsigma" value="0.075"/>
+		<param name="ogain" value="6.0"/>
+		<param name="lskip" value="3"/>
+		<param name="minimumScore" value="100" />
+		<param name="srr" value="0.003"/>
+		<param name="srt" value="0.001"/>
+		<param name="str" value="0.003"/>
+		<param name="stt" value="0.002"/>
+		<param name="linearUpdate" value="1.0"/>
+		<param name="angularUpdate" value="0.25"/>
+		<param name="temporalUpdate" value="-1.0"/>
+		<param name="resampleThreshold" value="0.5"/>
+		<param name="particles" value="300"/>
+		<param name="xmin" value="-10.0"/>
+		<param name="ymin" value="-10.0"/>
+		<param name="xmax" value="10.0"/>
+		<param name="ymax" value="10.0"/>
+		<param name="delta" value="0.10"/>
+		<param name="llsamplerange" value="0.02"/>
+		<param name="llsamplestep" value="0.05"/>
+		<param name="lasamplerange" value="0.05"/>
+		<param name="lasamplestep" value="0.025"/>
+        <param name="transform_publish_period" value="0.0"/>
+  </node>
+
+    <include file="$(find routing_driver)/launch/gazebo/amcl.launch.xml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find routing_driver)/map/$(arg filename).yaml">
+        <remap from="/map" to="/pre_map"/>
+    </node>
+
+    <!-- move_base --> 
+    <arg name="cmd_vel_topic" default="cmd_vel" />
+    <arg name="odom_topic" default="odom" />
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <param name="base_global_planner" value="global_planner/GlobalPlanner" />
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+        <param name="recovery_behavior_enabled" value="true"/>
+        <param name="clearing_rotation_allowed" value="false"/>
+        <rosparam file="$(find routing_driver)/param/gazebo/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find routing_driver)/param/gazebo/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find routing_driver)/param/gazebo/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find routing_driver)/param/gazebo/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find routing_driver)/param/gazebo/dwa_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find routing_driver)/param/gazebo/base_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find routing_driver)/param/gazebo/move_base_params.yaml" command="load" />
+        <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+        <remap from="odom" to="$(arg odom_topic)"/>
+    </node>
+
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find routing_driver)/rviz/gazebo_frontier_exploration.rviz" />
+    
+</launch>

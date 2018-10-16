@@ -1,0 +1,106 @@
+<launch>
+
+    <!-- Set to your sensor's range -->
+    <arg name="sensor_range" default="11.4"/>
+    <arg name="goal_aliasing" default="1.0"/>
+    <arg name="initial_pose_x" default="-6.0"/>
+    <arg name="initial_pose_y" default="-6.0"/>
+
+
+    <node pkg="frontier_exploration" type="explore_client" name="explore_client" output="screen">
+        <param name="sensor_range" type="double" value="$(arg sensor_range)"/>
+        <param name="initial_pose_x" value="$(arg initial_pose_x)"/>
+        <param name="initial_pose_y" value="$(arg initial_pose_y)"/>
+    </node>
+
+    <node pkg="frontier_exploration" type="explore_server" name="explore_server" output="screen" >
+
+        <param name="frequency" type="double" value="2.0"/>
+        <param name="goal_aliasing" type="double" value="$(arg goal_aliasing)"/>
+
+        #All standard costmap_2d parameters as in move_base, other than BoundedExploreLayer
+        <rosparam ns="explore_costmap" subst_value="true">
+            footprint: [[0.35, 0.45], [0.35, -0.45], [-0.65, -0.45], [-0.65, 0.45]]
+            inflation_radius: 0.8
+
+            transform_tolerance: 0.5
+            update_frequency: 2.0
+            publish_frequency: 0.5
+
+            #must match incoming static map
+            global_frame: map
+            robot_base_frame: base_link
+            resolution: 0.10
+
+            rolling_window: false
+            track_unknown_space: true
+
+            plugins:
+
+                - {name: static,           type: "costmap_2d::StaticLayer"}
+                - {name: explore_boundary, type: "frontier_exploration::BoundedExploreLayer"}
+                #Can disable sensor layer if gmapping is fast enough to update scans
+                - {name: sensor,           type: "costmap_2d::ObstacleLayer"}
+                - {name: inflation,        type: "costmap_2d::InflationLayer"}
+
+            static:
+                #Can pull data from gmapping, map_server or a non-rolling costmap
+                map_topic: /map
+                # map_topic: move_base/global_costmap/costmap
+                subscribe_to_updates: true
+
+            explore_boundary:
+                resize_to_boundary: false
+                frontier_travel_point: centroid
+                #境界とする最小のセル数
+                min_frontier_size: 2
+                #set to false for gmapping, true if re-exploring a known area
+                explore_clear_space: false
+
+            sensor:
+                observation_sources: scan
+                scan: {data_type: LaserScan, topic: laser_scan, marking: true, clearing: true, min_obstacle_height: 0.50, max_obstacle_height: 0.675}
+
+            inflation:
+            #このレイヤでの各セルの拡張範囲
+                inflation_radius: 0.20
+      </rosparam>
+
+      <rosparam ns="carrent_costmap" subst_value="true">
+            #must match incoming static map
+            global_frame: map
+            robot_base_frame: base_link
+            resolution: 0.10
+
+            rolling_window: false
+            track_unknown_space: true
+
+            plugins:
+                - {name: static,           type: "costmap_2d::StaticLayer"}
+            static:
+                #Can pull data from gmapping, map_server or a non-rolling costmap
+                map_topic: /map
+                # map_topic: move_base/global_costmap/costmap
+                subscribe_to_updates: true
+      </rosparam>
+
+      <rosparam ns="pre_costmap" subst_value="true">
+            #must match incoming static map
+            global_frame: map
+            robot_base_frame: base_link
+            resolution: 0.10
+
+            rolling_window: false
+            track_unknown_space: true
+
+            plugins:
+                - {name: static,           type: "costmap_2d::StaticLayer"}
+            static:
+                #Can pull data from gmapping, map_server or a non-rolling costmap
+                map_topic: /pre_map
+                # map_topic: move_base/global_costmap/costmap
+                subscribe_to_updates: true
+      </rosparam>
+    </node>
+
+</launch>

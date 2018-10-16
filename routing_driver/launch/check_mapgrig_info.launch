@@ -1,0 +1,12 @@
+<launch>
+    <arg name="filename" default="gazebo_navigation"/>
+    <arg name="map_file" default="$(find routing_driver)/map/$(arg filename).yaml"/>
+
+    <node name="check_mapgrid_info" pkg="routing_driver" type="check_mapgrid_info" output="screen">
+        <remap from="/check_pose" to="/clicked_point"/>
+    </node>
+
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />    
+    <node name="rviz" pkg="rviz" type="rviz" output="screen"/>
+
+</launch>

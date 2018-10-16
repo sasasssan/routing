@@ -1,0 +1,32 @@
+<!-- gazebo_navigation -->
+
+<launch>
+
+  <arg name="show_rviz" default="true"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find routing_driver)/worlds/Building.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find dulcinea_driver)/urdf/dulcinea.urdf.xacro'" />
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -x -0 -y -0 -z 0 -R 0 -P 0 -Y 0 -model dulcinea" />
+
+  <group if="$(arg show_rviz)">
+    <!-- load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find dulcinea_driver)/config/joint_position_control.yaml" command="load" />
+    <!-- load the controllers -->
+    <node name="dulcinea_controller" pkg="controller_manager" type="spawner" output="screen" args="joint_state_controller" />
+ 
+    <!-- publish all the frames to TF -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+      <param name="publish_frequency" value="20"/> <!-- Hz -->
+    </node>
+  </group> 
+
+</launch>

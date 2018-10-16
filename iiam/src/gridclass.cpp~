@@ -1,0 +1,150 @@
+#include "iiam/iiam.h"
+#include "iiam/calculation.h"
+
+iiam::GridClass::GridClass() { }
+
+iiam::GridClass::GridClass(int x,int y) {
+
+    this->x = x;
+    this->y = y;
+    cell_type = -1;
+    movable_cell = true;
+    process_cell = false;
+    observation_point = false;
+    obs_count = 0;
+    shooted_vector_number = 0;
+}	  
+
+iiam::GridClass::~GridClass(void){ }
+
+void iiam::GridClass::setCellType(short int type) {
+    cell_type = type;
+    return;      
+}
+
+void iiam::GridClass::setMovableCell(bool type) {
+    movable_cell = type;
+    return;
+}
+
+void iiam::GridClass::setCautionCell() {
+    movable_cell = false;
+    return;
+}
+
+void iiam::GridClass::setProcessCell(bool process) {
+    process_cell = process;
+    return;
+}
+
+void iiam::GridClass::setObsCount(int count) {
+    obs_count = count;
+    return;
+}
+
+void iiam::GridClass::setShootedVectorNumber(int count) {
+    shooted_vector_number = count;
+    return;
+}
+
+void iiam::GridClass::setObservationPoint() {
+    observation_point = true;
+    return;
+}
+
+void iiam::GridClass::updateObsCount() {
+    obs_count++;
+    return;
+}
+
+void iiam::GridClass::updateShootedVectorNumber() {
+    shooted_vector_number++;
+    return;
+}
+
+void iiam::GridClass::pushbackShootingVector(float vector) {
+    shooting_vector.push_back(VectorClass(vector));
+    return;     
+}
+
+void iiam::GridClass::pushbacksGrid(int x, int y, float angle, float angleObs2sgrid) {
+    sGrid.push_back(new ShootingGrid(x, y, angle, angleObs2sgrid));
+    return;
+}
+
+void iiam::GridClass::erasesGrid(int number){
+    sGrid.erase(sGrid.begin() + number);
+    return;
+}
+
+void iiam::GridClass::clearsGrid() {
+    sGrid.clear();
+    return;
+}
+
+int iiam::GridClass::getX() {
+    return x;
+}
+      
+int iiam::GridClass::getY() {
+    return y;
+}
+
+iiam::VectorClass iiam::GridClass::getShootingVector(int number) {
+    return shooting_vector[number];
+}
+
+int iiam::GridClass::getShootingVectorNumber() {
+    return shooting_vector.size();
+}
+
+iiam::ShootingGrid *iiam::GridClass::getsGrid(int number) {
+    return sGrid[number];
+}
+
+int iiam::GridClass::getsGridNumber() {
+    return sGrid.size();
+}
+
+int iiam::GridClass::getObsCount() {
+    return obs_count;
+}
+
+int iiam::GridClass::getShootedVectorNumber() {
+    return shooted_vector_number;
+}
+
+short int iiam::GridClass::getCellType() {
+    return cell_type;
+}
+
+bool iiam::GridClass::isProcessCell() {
+    return process_cell;
+}
+
+bool iiam::GridClass::isMovableCell() {
+    return movable_cell;
+}
+
+bool iiam::GridClass::isObservationPoint() {
+    return observation_point;
+}
+
+//指定した撮影ベクトルがすでに付加されている撮影ベクトルと似ているかどうか
+bool iiam::GridClass::isSimilarVector(float src_vector, float cos_interval){
+
+    std::vector<VectorClass>::iterator vector=shooting_vector.begin();     
+    for( ; vector != shooting_vector.end(); ++vector){
+        if(cos(CalcRadianGap(src_vector, (*vector).getAngle())) > cos_interval){
+            return true;
+        }
+    }
+          
+    return false;
+}
+      
+bool iiam::GridClass::hasShootingVector() {
+    if(shooting_vector.size() > 0) return true;
+    return false;
+}
+

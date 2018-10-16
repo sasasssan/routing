@@ -1,0 +1,12 @@
+<!-- laser_measurement -->
+<launch>
+
+  <node pkg="dulcinea_operate" type="dulcinea_operate" name="dulcinea_operate" output="screen">
+  </node>
+
+  <node pkg="joy" type="joy_node" name="dulcinea_joy_node" output="screen">
+    <param name="dev" value="/dev/input/js0"/>
+  </node>
+  
+</launch>
+

@@ -1,0 +1,14 @@
+#フロンティア探査の境界 頂点：polygon.points
+geometry_msgs/PolygonStamped explore_boundary
+
+#explore_boundaryの中でフロンティア探検の中心点：point 
+geometry_msgs/PointStamped explore_center
+---
+#ロボットの現在の位置
+geometry_msgs/PoseStamped base_position
+---
+#探索する現在のフロンティア
+geometry_msgs/PoseStamped next_frontier
+
+#ロボットの現在の位置
+geometry_msgs/PoseStamped base_position

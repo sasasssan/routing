@@ -1,0 +1,79 @@
+waypoints:
+    - position:
+        x: 2.08949
+        y: -0.0694518
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.501451
+        qw: 0.865186
+        flag: 0
+    - position:
+        x: 1.02801
+        y: 2.99384
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.491131
+        qw: 0.871086
+        flag: 0
+    - position:
+        x: 3.9501
+        y: 1.92184
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.475911
+        qw: 0.879493
+        flag: 0
+    - position:
+        x: 2.96633
+        y: 4.99015
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.509072
+        qw: 0.860724
+        flag: 0
+    - position:
+        x: 5.92816
+        y: 3.98549
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.463505
+        qw: 0.886094
+        flag: 0
+    - position:
+        x: 4.95182
+        y: 6.93523
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.479052
+        qw: 0.877787
+        flag: 0
+    - position:
+        x: 7.92573
+        y: 5.90425
+        z: 0
+        qx: 0
+        qy: 0
+        qz: -0.481578
+        qw: 0.876403
+        flag: 0
+finish_pose:
+    header:
+        seq: 0
+        stamp: 0.000000000
+        frame_id: 
+    pose:
+        position:
+            x: 7.91583
+            y: 7.90412
+            z: 9.28858e-05
+        orientation:
+            x: 3.81894e-05
+            y: -2.0074e-05
+            z: 0.398183
+            w: 0.91731
